@@ -25,4 +25,4 @@
    - La conversación permitió que el usuario comprendiera cómo utilizar estos módulos en sus propios proyectos, con énfasis en la terminal y la automatización.
    - Se ofrecieron recursos adicionales para profundizar, como la documentación oficial de **argparse** y tutoriales recomendados.
 
-Este resumen cubre los puntos clave de la conversación y muestra cómo se abordaron los temas de forma práctica y estructurada, con ejemplos y aclaraciones que facilitaron el aprendizaje.
+Este resumen cubre los puntos clave de la conversación y muestra cómo se abordaron los temas de forma práctica y estructurada, con ejemplos y aclaraciones que facilitaron el aprendizaje.  
