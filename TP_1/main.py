@@ -3,6 +3,7 @@ from generador import generar_datos
 from analizador import analizador
 from verificador import verificador
 from verificar_cadena import validar_integridad
+from reporte import generar_reporte
 
 if __name__ == "__main__":
     from time import sleep
@@ -45,6 +46,9 @@ if __name__ == "__main__":
     resultado = validar_integridad("blockchain.json")
     
     if resultado:
-        print("✅ La blockchain se ha creado correctamente y es válida")
+        print("La blockchain se ha creado correctamente y es válida")
     else:
-        print("❌ Se detectaron problemas en la blockchain")
+        print("Se detectaron problemas en la blockchain")
+    
+    generar_reporte()
+    print("se generó el reporte de la blockchain en 'reporte.txt'")
