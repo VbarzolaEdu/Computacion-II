@@ -1,6 +1,7 @@
 import json
 import hashlib
 import os
+import queue
 
 def calcular_hash(prev_hash, datos, timestamp):
     bloque_str = prev_hash + json.dumps(datos, sort_keys=True) + timestamp
@@ -8,7 +9,7 @@ def calcular_hash(prev_hash, datos, timestamp):
 
 def verificador(queue_a, queue_b, queue_c):
     from collections import defaultdict
-    import queue
+    
 
     resultados_por_timestamp = defaultdict(dict)
     cadena_bloques = []

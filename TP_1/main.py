@@ -28,6 +28,12 @@ if __name__ == "__main__":
     for p in [p_gen, p_a, p_b, p_c, p_verif]:
         p.start()
 
+    # Cerrar los extremos child en el proceso principal 
+    # (solo el generador usa parent, solo los analizadores usan child)
+    child_a.close()
+    child_b.close()
+    child_c.close()
+
     for p in [p_gen, p_a, p_b, p_c, p_verif]:
         p.join()
 

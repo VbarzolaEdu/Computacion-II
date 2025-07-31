@@ -17,7 +17,11 @@ def generar_datos(pipe_a, pipe_b, pipe_c):
 
         time.sleep(1)
     
-    # Cerrar los pipes para indicar que no habrá más datos
+    
+    pipe_a.send(None)  # Señal de terminación para el analizador de frecuencia
+    pipe_b.send(None)  # Señal de terminación para el analizador de presión
+    pipe_c.send(None)  # Señal de terminación para el analizador de oxígeno
+    
     pipe_a.close()
     pipe_b.close()
     pipe_c.close()

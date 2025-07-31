@@ -15,7 +15,10 @@ def analizador(tipo, pipe_entrada, queue_salida):
             if muestra is None:
                 break  
         except EOFError:
-            # El pipe se cerró, no hay más datos
+            break  
+        except Exception as e:
+            # Cualquier otro error
+            print(f"Analizador {tipo}: Error inesperado: {e}")
             break  
 
         timestamp = muestra["timestamp"]
@@ -50,5 +53,4 @@ def analizador(tipo, pipe_entrada, queue_salida):
 
         queue_salida.put(resultado)
     
-    # Cerrar la queue para indicar que no habrá más resultados
-    queue_salida.close()
+
