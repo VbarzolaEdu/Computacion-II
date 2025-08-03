@@ -1,0 +1,9 @@
+📄 REPORTE FINAL DEL SISTEMA BIOMÉTRICO
+========================================
+🔢 Total de bloques generados: 60
+⚠️  Bloques con alerta: 0
+
+📊 Promedios generales:
+   - Frecuencia: 124.62
+   - Presión:    98.95
+   - Oxígeno:    94.20

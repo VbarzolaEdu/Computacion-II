@@ -4,7 +4,7 @@
 
 ### Instrucciones
 
--Desde el directorio principal del proyecto ejecutar "python3 main.py"
+- Desde el directorio principal del proyecto ejecutar "python3 main.py"
 
 
 ---
@@ -15,6 +15,5 @@ Python 3.8 o superior.
 
 ### 📚 Librerías necesarias
 
-```bash
-pip install numpy
+- numpy
 
