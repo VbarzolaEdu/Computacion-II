@@ -1,10 +1,11 @@
 import asyncio
+import argparse
 from aiohttp import web, ClientError
 from scraper.html_parser import parse_html
 from scraper.async_http import fetch_html
 from common.protocol import safe_socket_request, log_error
 
-# --- Endpoint principal ---
+
 async def handle_scrape(request):
     url = request.query.get('url')
     if not url:
@@ -13,8 +14,6 @@ async def handle_scrape(request):
     try:
         html = await fetch_html(url)
         data = parse_html(html)
-
-        # Comunicación con servidor B (con manejo interno de errores)
         processing = await asyncio.to_thread(safe_socket_request, {"url": url})
 
         return web.json_response({
@@ -36,9 +35,21 @@ async def handle_scrape(request):
 
 
 def main():
+    # --- CLI ARGPARSE ---
+    parser = argparse.ArgumentParser(
+        description="Servidor de Scraping Web Asíncrono"
+    )
+    parser.add_argument('-i', '--ip', required=True, help='Dirección de escucha (IPv4 o IPv6)')
+    parser.add_argument('-p', '--port', required=True, type=int, help='Puerto de escucha')
+    parser.add_argument('-w', '--workers', type=int, default=4, help='Número de workers (default: 4)')
+    args = parser.parse_args()
+
+    # --- ARRANQUE DEL SERVIDOR ---
     app = web.Application()
     app.router.add_get('/scrape', handle_scrape)
-    web.run_app(app, host='127.0.0.1', port=8000)
+
+    print(f"🌐 Servidor A escuchando en {args.ip}:{args.port} con {args.workers} workers")
+    web.run_app(app, host=args.ip, port=args.port)
 
 
 if __name__ == '__main__':

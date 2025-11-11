@@ -1,3 +1,4 @@
+import argparse
 import socketserver
 import json
 from multiprocessing import Pool, cpu_count
@@ -30,10 +31,8 @@ class ProcessingHandler(socketserver.BaseRequestHandler):
         try:
             data = self.request.recv(8192).decode()
             task = json.loads(data)
-
             with Pool(cpu_count()) as pool:
                 result = pool.apply(handle_task, (task,))
-
             self.request.sendall(json.dumps(result).encode())
         except json.JSONDecodeError:
             log_error("Datos inválidos recibidos por socket.")
@@ -43,8 +42,27 @@ class ProcessingHandler(socketserver.BaseRequestHandler):
             self.request.sendall(json.dumps({"error": str(e)}).encode())
 
 
-if __name__ == "__main__":
-    HOST, PORT = "127.0.0.1", 9000
-    with socketserver.TCPServer((HOST, PORT), ProcessingHandler) as server:
-        print(f"🧠 Servidor de procesamiento corriendo en {HOST}:{PORT}")
+def main():
+    # --- CLI ARGPARSE ---
+    parser = argparse.ArgumentParser(
+        description="Servidor de Procesamiento Distribuido"
+    )
+    parser.add_argument('-i', '--ip', required=True, help='Dirección de escucha')
+    parser.add_argument('-p', '--port', required=True, type=int, help='Puerto de escucha')
+    parser.add_argument('-n', '--processes', type=int, default=cpu_count(),
+                        help='Número de procesos en el pool (default: CPU count)')
+    args = parser.parse_args()
+
+    # --- ARRANQUE DEL SERVIDOR ---
+    HOST, PORT = args.ip, args.port
+
+    class CustomTCPServer(socketserver.TCPServer):
+        allow_reuse_address = True  # evita "Address already in use"
+
+    with CustomTCPServer((HOST, PORT), ProcessingHandler) as server:
+        print(f"🧠 Servidor B corriendo en {HOST}:{PORT} con {args.processes} procesos")
         server.serve_forever()
+
+
+if __name__ == "__main__":
+    main()
