@@ -4,5 +4,7 @@ lxml
 playwright
 pillow
 requests
-common.errors
 pytest
+common
+pytest-asyncio
+
