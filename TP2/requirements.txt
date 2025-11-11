@@ -4,4 +4,5 @@ lxml
 playwright
 pillow
 requests
+common.errors
 
