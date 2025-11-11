@@ -365,5 +365,3 @@ Este proyecto es de uso académico y educativo.
 
 ---
 
-**¿Preguntas o problemas?**  
-Abre un issue en el repositorio o contacta al autor.
