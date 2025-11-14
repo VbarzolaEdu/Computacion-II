@@ -1,68 +1,61 @@
+# server_processing.py
 import argparse
-import socketserver
+import socket
 import json
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool
+
+from common.serialization import send_packet, recv_packet
 from processor.screenshot import take_screenshot
 from processor.performance import analyze_performance
-from processor.image_processor import process_images
-from common.protocol import log_error
 
 
-def handle_task(task: dict) -> dict:
-    url = task.get("url", "")
-    try:
-        print(f"[+] Procesando tarea para: {url}")
-        screenshot = take_screenshot(url)
-        performance = analyze_performance(url)
-        thumbnails = process_images(url)
-        return {
-            "screenshot": screenshot,
-            "performance": performance,
-            "thumbnails": thumbnails,
-            "status": "ok"
-        }
-    except Exception as e:
-        log_error(f"Error procesando {url}: {e}")
-        return {"error": str(e), "status": "failed"}
+def process_request(data):
+    """
+    Ejecuta el procesamiento CPU-bound en un worker del Pool.
+    """
+    url = data.get("url")
+    html = data.get("html")
+
+    screenshot = take_screenshot(url)
+    performance = analyze_performance(html)
+
+    return {
+        "screenshot": screenshot,
+        "performance": performance,
+        "status": "ok"
+    }
 
 
-class ProcessingHandler(socketserver.BaseRequestHandler):
-    def handle(self):
-        try:
-            data = self.request.recv(8192).decode()
-            task = json.loads(data)
-            with Pool(cpu_count()) as pool:
-                result = pool.apply(handle_task, (task,))
-            self.request.sendall(json.dumps(result).encode())
-        except json.JSONDecodeError:
-            log_error("Datos inválidos recibidos por socket.")
-            self.request.sendall(json.dumps({"error": "invalid_json"}).encode())
-        except Exception as e:
-            log_error(f"Error general en handler: {e}")
-            self.request.sendall(json.dumps({"error": str(e)}).encode())
+def start_server(host, port, workers):
+    """
+    Servidor TCP dual-stack IPv4 + IPv6 con multiprocessing.
+    """
+    # Socket IPv6 que también acepta IPv4
+    server = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+    server.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+    server.bind((host, port))
+    server.listen()
 
+    print(f"[Servidor B] Escuchando en [{host}]:{port} con {workers} workers")
 
-def main():
-    # --- CLI ARGPARSE ---
-    parser = argparse.ArgumentParser(
-        description="Servidor de Procesamiento Distribuido"
-    )
-    parser.add_argument('-i', '--ip', required=True, help='Dirección de escucha')
-    parser.add_argument('-p', '--port', required=True, type=int, help='Puerto de escucha')
-    parser.add_argument('-n', '--processes', type=int, default=cpu_count(),
-                        help='Número de procesos en el pool (default: CPU count)')
-    args = parser.parse_args()
+    pool = Pool(processes=workers)
 
-    # --- ARRANQUE DEL SERVIDOR ---
-    HOST, PORT = args.ip, args.port
+    while True:
+        conn, addr = server.accept()
+        print(f"[Servidor B] Conexión desde {addr}")
 
-    class CustomTCPServer(socketserver.TCPServer):
-        allow_reuse_address = True  # evita "Address already in use"
+        request = recv_packet(conn)     # <-- integración correcta
+        result = pool.apply(process_request, (request,))
 
-    with CustomTCPServer((HOST, PORT), ProcessingHandler) as server:
-        print(f"🧠 Servidor B corriendo en {HOST}:{PORT} con {args.processes} procesos")
-        server.serve_forever()
+        send_packet(conn, result)       # <-- integración correcta
+        conn.close()
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Servidor B - Procesamiento")
+    parser.add_argument("--ip", default="::")
+    parser.add_argument("--port", type=int, default=9000)
+    parser.add_argument("--workers", type=int, default=4)
+    args = parser.parse_args()
+
+    start_server(args.ip, args.port, args.workers)
