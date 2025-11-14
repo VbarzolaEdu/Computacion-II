@@ -1,5 +1,6 @@
 # scraper/html_parser.py
 from bs4 import BeautifulSoup
+from scraper.metadata_extractor import extract_metadata
 
 def parse_html(html: str) -> dict:
     soup = BeautifulSoup(html, 'lxml')
@@ -11,7 +12,7 @@ def parse_html(html: str) -> dict:
     links = [a['href'] for a in soup.find_all('a', href=True)]
 
     # Meta tags
-    meta_tags = {}
+    meta_tags = extract_metadata(html)
     for tag in soup.find_all('meta'):
         key = tag.get('name') or tag.get('property')
         if key and tag.get('content'):
