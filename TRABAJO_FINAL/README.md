@@ -1,4 +1,4 @@
-# 🏟️ Sistema Distribuido de Reservas de Canchas de Pádel  
+# 🏟️ Sistema de Reservas de Canchas de Pádel  
 ### **Trabajo Final – Computación II**  
 ### **Autor: Valentín Barzola**
 
@@ -24,7 +24,7 @@ El sistema utiliza **sockets TCP**, **asincronismo con asyncio**, y **procesos e
                    │ - Maneja múltiples clientes concurrentes (asyncio)        │
                    │ - Por cada cliente:                                       │
                    │       • Recibe JSON con datos del turno                   │
-                   │       • Valida formato y disponibilidad básica            │
+                   │       • Valida formato            │
                    │       • Asigna ID de turno                                │
                    │       • Encola la tarea para procesamiento                │
                    │ - Responde al cliente: "turno_recibido"                   │
