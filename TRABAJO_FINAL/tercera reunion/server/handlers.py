@@ -10,8 +10,10 @@ from typing import Any, Dict
 from utils.logger import get_logger
 from utils.exceptions import ValidationError
 from models.schemas import ReservaRequest
+from utils.reserva_logger import get_reserva_logger
 
 logger = get_logger(__name__)
+reserva_logger = get_reserva_logger()
 
 
 async def handle_client(reader, writer, dispatcher) -> None:
@@ -42,22 +44,46 @@ async def handle_client(reader, writer, dispatcher) -> None:
         # Delegar al dispatcher (esto hace await run_in_executor)
         result = await dispatcher.dispatch(request_id, reserva_request)
 
-        # Enviar respuesta al cliente
-        response = {
-            "status": "success",
-            "id": request_id,
-            "data": result
-        }
+        # Enviar respuesta al cliente con el formato esperado
+        if result.get("estado") == "error":
+            response = {
+                "estado": "error",
+                "message": result.get("mensaje", "Error desconocido")
+            }
+            # Loguear reserva rechazada
+            reserva_logger.log_reserva_rechazada(
+                request_dict,
+                result.get("mensaje", "Error desconocido")
+            )
+        else:
+            response = {
+                "estado": "confirmada",
+                "reserva_id": result.get("reserva_id"),
+                "cancha_id": request_dict.get("cancha_id"),
+                "horario": request_dict.get("horario"),
+                "confirmada_en": result.get("confirmada_en"),
+                "message": "Reserva confirmada exitosamente"
+            }
+            # Loguear reserva confirmada en JSON
+            reserva_logger.log_reserva_confirmada({
+                "reserva_id": result.get("reserva_id"),
+                "cliente_id": request_dict.get("cliente_id"),
+                "cancha_id": request_dict.get("cancha_id"),
+                "horario": request_dict.get("horario"),
+                "precio": request_dict.get("precio"),
+                "fecha": request_dict.get("fecha"),
+                "confirmada_en": result.get("confirmada_en")
+            })
 
     except json.JSONDecodeError as e:
         logger.error(f"JSON inválido: {e}")
-        response = {"status": "error", "message": "JSON inválido"}
+        response = {"estado": "error", "message": "JSON inválido"}
     except ValidationError as e:
         logger.error(f"Validación fallida: {e}")
-        response = {"status": "error", "message": str(e)}
+        response = {"estado": "error", "message": str(e)}
     except Exception as e:
         logger.error(f"Error inesperado: {e}")
-        response = {"status": "error", "message": "Error interno del servidor"}
+        response = {"estado": "error", "message": "Error desconocido"}
 
     # Enviar respuesta
     response_json = json.dumps(response) + "\n"

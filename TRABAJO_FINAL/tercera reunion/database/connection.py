@@ -69,8 +69,25 @@ class Database:
 
     def _create_tables(self):
         """Crea tablas si no existen"""
-        # TODO: crear tablas de canchas, reservas, usuarios
-        logger.info("Tablas de BD verificadas")
+        # Crear tabla de reservas
+        query = """
+        CREATE TABLE IF NOT EXISTS reservas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            cliente_id TEXT NOT NULL,
+            cancha_id TEXT NOT NULL,
+            horario TEXT NOT NULL,
+            fecha TEXT NOT NULL,
+            precio REAL NOT NULL,
+            estado TEXT DEFAULT 'confirmada',
+            creada_en DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+        try:
+            self.conn.execute(query)
+            self.conn.commit()
+            logger.info("Tabla 'reservas' verificada/creada")
+        except sqlite3.Error as e:
+            logger.error(f"Error creando tablas: {e}")
 
 
 # Singleton global

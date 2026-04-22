@@ -22,6 +22,8 @@ def procesar_reserva(request_dict: Dict[str, Any]) -> Dict[str, Any]:
     2. Guardar en BD
     3. Retornar confirmación
     """
+    from datetime import datetime
+
     logger.info(f"Worker procesando reserva: {request_dict.get('cliente_id')}")
 
     try:
@@ -34,6 +36,7 @@ def procesar_reserva(request_dict: Dict[str, Any]) -> Dict[str, Any]:
         result = {
             "reserva_id": reserva_id,
             "estado": "confirmada",
+            "confirmada_en": datetime.now().isoformat(),
             "mensaje": "Reserva guardada exitosamente"
         }
 

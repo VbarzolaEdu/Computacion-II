@@ -12,6 +12,7 @@ class Config:
     # Server
     HOST: str = os.getenv("SERVER_HOST", "127.0.0.1")
     PORT: int = int(os.getenv("SERVER_PORT", "5000"))
+    IPV6: bool = os.getenv("IPV6", "TRUE").lower() == "true"
 
     # Workers
     NUM_WORKERS: int = int(os.getenv("NUM_WORKERS", "4"))

@@ -17,7 +17,7 @@ class ReservaRequest(BaseModel):
     fecha: Optional[str] = Field(None, description="Fecha (YYYY-MM-DD)")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "cliente_id": "cliente_001",
                 "cancha_id": "cancha_1",
@@ -45,7 +45,7 @@ class ReservaResponse(BaseModel):
     confirmada_en: datetime
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "reserva_id": "RES-001",
                 "estado": "confirmada",

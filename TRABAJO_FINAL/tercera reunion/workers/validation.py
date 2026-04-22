@@ -7,6 +7,7 @@ from typing import Any, Dict
 
 from utils.logger import get_logger
 from utils.exceptions import ValidationError
+from data import CANCHAS, HORARIOS_DISPONIBLES, get_precio_cancha
 
 logger = get_logger(__name__)
 
@@ -54,14 +55,12 @@ def validar_reserva(request_dict: Dict[str, Any]) -> None:
 
 def _cancha_existe(cancha_id: str) -> bool:
     """Verifica si la cancha existe en BD"""
-    # TODO: implementar query a BD
-    return True
+    return cancha_id in CANCHAS
 
 
 def _horario_valido(horario: str) -> bool:
     """Verifica si el horario tiene formato válido"""
-    # TODO: validar formato y rango horario
-    return True
+    return horario in HORARIOS_DISPONIBLES
 
 
 def _cancha_disponible(cancha_id: str, horario: str) -> bool:
@@ -72,5 +71,4 @@ def _cancha_disponible(cancha_id: str, horario: str) -> bool:
 
 def _obtener_precio_cancha(cancha_id: str) -> float:
     """Obtiene el precio actual de la cancha"""
-    # TODO: consultar precio en BD
-    return 50.0
+    return get_precio_cancha(cancha_id)

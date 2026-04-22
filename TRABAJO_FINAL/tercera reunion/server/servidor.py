@@ -12,6 +12,9 @@ from utils.config import Config
 from utils.logger import get_logger
 from server.handlers import handle_client
 from server.dispatcher import Dispatcher
+import socket 
+import struct
+
 
 logger = get_logger(__name__)
 
@@ -20,11 +23,57 @@ class AsyncioServer:
     """Servidor TCP con asyncio y ProcessPoolExecutor para workers"""
 
     def __init__(self, config: Config):
-        self.config = config //todavia no hay config
+        self.config = config  # Configuración centralizada
         self.executor: Optional[ProcessPoolExecutor] = None
         self.dispatcher: Optional[Dispatcher] = None
         self.server = None
 
+    
+    
+    def get_socket_family(self,host:str) -> int:
+        """
+        Detectar si el host es IPv4 o IPv6.
+        Retorna socket.AF_INET para IPv4 o socket.AF_INET6 para IPv6.
+        """
+        try:
+            # Intentar parsear como IPv6
+            socket.inet_pton(socket.AF_INET6, host)
+            return socket.AF_INET6
+        except (socket.error, OSError):
+            pass
+        
+        try:
+            # Intentar parsear como IPv4
+            socket.inet_pton(socket.AF_INET, host)
+            return socket.AF_INET
+        except (socket.error, OSError):
+            pass
+        
+        # Si es "::" (escuchar en todos), usar IPv6 con dual-stack
+        if host == "::":
+            return socket.AF_INET6
+        
+        # Default: IPv4
+        return socket.AF_INET
+
+
+    def _configure_dual_stack(self):
+        """
+        Configurar socket para soportar IPv4 e IPv6 simultáneamente.
+        Retorna una función que configura el socket.
+        """
+        def set_socket_opts(sock):
+            # Permitir reutilizar dirección/puerto
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            
+            # Si es IPv6, habilitar dual-stack (aceptar IPv4 también)
+            if sock.family == socket.AF_INET6:
+                # IPV6_V6ONLY=0 permite que IPv6 acepte conexiones IPv4
+                sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+                logger.info("✓ Dual-stack habilitado (IPv4 + IPv6)")
+        
+        return set_socket_opts
+    
     async def start(self):
         """Inicia el servidor TCP y el dispatcher"""
         logger.info(f"Iniciando servidor en {self.config.HOST}:{self.config.PORT}")
@@ -38,15 +87,25 @@ class AsyncioServer:
         # Crear dispatcher
         self.dispatcher = Dispatcher(self.executor)
 
-        # Iniciar servidor TCP
+        # Crear socket manualmente para habilitar dual-stack (IPv4 + IPv6)
+        sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # Habilitar dual-stack: IPv6 socket que también acepta IPv4
+        sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        sock.bind(("::", self.config.PORT))
+        sock.listen(128)
+
+        # Iniciar servidor TCP con el socket configurado
         self.server = await asyncio.start_server(
             self._client_connected,
-            self.config.HOST,
-            self.config.PORT
+            sock=sock
         )
 
-        addr = self.server.sockets[0].getsockname()
+        # Loguear información de los sockets
+        sock_info = self.server.sockets[0]
+        addr = sock_info.getsockname()
         logger.info(f"Servidor escuchando en {addr}")
+        logger.info(f"✓ Dual-stack habilitado (acepta IPv4 e IPv6)")
 
         async with self.server:
             await self.server.serve_forever()
@@ -57,7 +116,9 @@ class AsyncioServer:
         logger.info(f"Cliente conectado: {addr}")
 
         try:
-            await handle_client(reader, writer, self.dispatcher) //Le paso al distpacher para que lo maneje, y el dispatcher se encarga de asignar a un worker
+            # Le paso al dispatcher para que lo maneje
+            # El dispatcher se encarga de asignar a un worker
+            await handle_client(reader, writer, self.dispatcher)
         except Exception as e:
             logger.error(f"Error manejando cliente {addr}: {e}")
         finally:
@@ -66,9 +127,9 @@ class AsyncioServer:
             logger.info(f"Cliente desconectado: {addr}")
 
 
-///Aca se inicializa cada worker pero habria que ver donde coloco la logica que permite la inicializacion de la db.
     def _init_worker(self):
         """Inicializador para cada worker (se ejecuta una sola vez)"""
+        # Se inicializa cada worker aquí
         # Aquí puedes inicializar DB connections, loggers, etc. en cada proceso
         logger.info("Worker inicializado")
 
@@ -95,6 +156,7 @@ async def main():
         logger.info("Interrupción del usuario")
     finally:
         await server.stop()
+
 
 
 if __name__ == "__main__":

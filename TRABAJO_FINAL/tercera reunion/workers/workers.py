@@ -15,7 +15,7 @@ class WorkerPool:
     """Gestor del pool de workers"""
 
 
-//Esta hardcodedado en numero
+//Se crean por predeterminado 4 si no se pasa la cantidad de workers
     def __init__(self, num_workers: int = 4):
         self.num_workers = num_workers
         self.executor: Optional[ProcessPoolExecutor] = None
