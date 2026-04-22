@@ -1,0 +1,4 @@
+Frontend
+Cache redis- para reservas que ya se hicieron
+base de datos real, con cola ipc 
+Test

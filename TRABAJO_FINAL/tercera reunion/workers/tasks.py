@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 from utils.logger import get_logger
 from workers.validation import validar_reserva
-from database.queries import guardar_reserva
+# from database.queries import guardar_reserva  # COMENTADO: BD no se usa, solo JSON logs
 
 logger = get_logger(__name__)
 
@@ -19,8 +19,7 @@ def procesar_reserva(request_dict: Dict[str, Any]) -> Dict[str, Any]:
 
     Pasos:
     1. Validar cancha, horario, disponibilidad
-    2. Guardar en BD
-    3. Retornar confirmación
+    2. Retornar confirmación (la persistencia se hace en JSON logs)
     """
     from datetime import datetime
 
@@ -30,14 +29,17 @@ def procesar_reserva(request_dict: Dict[str, Any]) -> Dict[str, Any]:
         # Validar
         validar_reserva(request_dict)
 
-        # Guardar en BD
-        reserva_id = guardar_reserva(request_dict)
+        # COMENTADO: guardar en BD - no se usa, solo JSON logs
+        # reserva_id = guardar_reserva(request_dict)
+        # Generar ID simple para la reserva
+        import uuid
+        reserva_id = str(uuid.uuid4())[:8].upper()
 
         result = {
             "reserva_id": reserva_id,
             "estado": "confirmada",
             "confirmada_en": datetime.now().isoformat(),
-            "mensaje": "Reserva guardada exitosamente"
+            "mensaje": "Reserva procesada exitosamente"
         }
 
         logger.info(f"Reserva procesada: {reserva_id}")

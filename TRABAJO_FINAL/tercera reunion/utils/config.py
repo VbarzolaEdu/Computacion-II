@@ -18,9 +18,9 @@ class Config:
     NUM_WORKERS: int = int(os.getenv("NUM_WORKERS", "4"))
     WORKER_TIMEOUT: int = int(os.getenv("WORKER_TIMEOUT", "30"))
 
-    # Database
-    DB_PATH: str = os.getenv("DB_PATH", "./data/reservas.db")
-    DB_TIMEOUT: int = int(os.getenv("DB_TIMEOUT", "10"))
+    # Database (COMENTADO: BD no se usa, solo JSON logs)
+    # DB_PATH: str = os.getenv("DB_PATH", "./data/reservas.db")
+    # DB_TIMEOUT: int = int(os.getenv("DB_TIMEOUT", "10"))
 
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
@@ -32,5 +32,5 @@ class Config:
 
     def __post_init__(self):
         # Crear directorios si no existen
-        os.makedirs(os.path.dirname(self.DB_PATH), exist_ok=True)
+        # os.makedirs(os.path.dirname(self.DB_PATH), exist_ok=True)  # COMENTADO: BD no se usa
         os.makedirs(os.path.dirname(self.LOG_FILE), exist_ok=True)

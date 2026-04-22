@@ -46,7 +46,7 @@ class ClienteReservas:
 
     def mostrar_menu_canchas(self) -> str:
         """Muestra menú de canchas y retorna cancha_id elegida"""
-        print("\n🏟️  CANCHAS DISPONIBLES:")
+        print("\n  CANCHAS DISPONIBLES:")
         print("-" * 60)
 
         canchas_list = list(CANCHAS.items())

@@ -2,3 +2,6 @@
 {"timestamp": "2026-04-22T00:36:52.097790", "tipo": "reserva_confirmada", "datos": {"reserva_id": "5", "cliente_id": "001", "cancha_id": "cancha_1", "horario": "08:00", "precio": 50, "fecha": "2026-04-23", "confirmada_en": "2026-04-22T00:36:52.096607"}}
 {"timestamp": "2026-04-22T00:37:28.153329", "tipo": "reserva_confirmada", "datos": {"reserva_id": "6", "cliente_id": "002", "cancha_id": "cancha_3", "horario": "09:00", "precio": 60, "fecha": "2026-04-24", "confirmada_en": "2026-04-22T00:37:28.151824"}}
 {"timestamp": "2026-04-22T00:37:34.652291", "tipo": "reserva_confirmada", "datos": {"reserva_id": "7", "cliente_id": "001", "cancha_id": "cancha_2", "horario": "08:00", "precio": 50, "fecha": "2026-04-23", "confirmada_en": "2026-04-22T00:37:34.650860"}}
+{"timestamp": "2026-04-22T14:48:16.344895", "tipo": "reserva_confirmada", "datos": {"reserva_id": "6B0B824E", "cliente_id": "001", "cancha_id": "cancha_1", "horario": "08:00", "precio": 50, "fecha": "2026-04-23", "confirmada_en": "2026-04-22T14:48:16.343163"}}
+{"timestamp": "2026-04-22T14:49:11.295832", "tipo": "reserva_confirmada", "datos": {"reserva_id": "BA9F52A1", "cliente_id": "002", "cancha_id": "cancha_2", "horario": "10:00", "precio": 50, "fecha": "2026-04-24", "confirmada_en": "2026-04-22T14:49:11.294345"}}
+n

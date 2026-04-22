@@ -5,15 +5,14 @@ Escucha conexiones TCP, recibe JSON de clientes, maneja el event loop.
 import asyncio
 import json
 import logging
-from concurrent.futures import ProcessPoolExecutor
 from typing import Optional
 
 from utils.config import Config
 from utils.logger import get_logger
 from server.handlers import handle_client
 from server.dispatcher import Dispatcher
-import socket 
-import struct
+from workers.workers import WorkerPool
+import socket
 
 
 logger = get_logger(__name__)
@@ -24,12 +23,12 @@ class AsyncioServer:
 
     def __init__(self, config: Config):
         self.config = config  # Configuración centralizada
-        self.executor: Optional[ProcessPoolExecutor] = None
+        self.worker_pool: Optional[WorkerPool] = None
         self.dispatcher: Optional[Dispatcher] = None
         self.server = None
 
-    
-    
+
+
     def get_socket_family(self,host:str) -> int:
         """
         Detectar si el host es IPv4 o IPv6.
@@ -41,18 +40,18 @@ class AsyncioServer:
             return socket.AF_INET6
         except (socket.error, OSError):
             pass
-        
+
         try:
             # Intentar parsear como IPv4
             socket.inet_pton(socket.AF_INET, host)
             return socket.AF_INET
         except (socket.error, OSError):
             pass
-        
+
         # Si es "::" (escuchar en todos), usar IPv6 con dual-stack
         if host == "::":
             return socket.AF_INET6
-        
+
         # Default: IPv4
         return socket.AF_INET
 
@@ -65,27 +64,25 @@ class AsyncioServer:
         def set_socket_opts(sock):
             # Permitir reutilizar dirección/puerto
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            
+
             # Si es IPv6, habilitar dual-stack (aceptar IPv4 también)
             if sock.family == socket.AF_INET6:
                 # IPV6_V6ONLY=0 permite que IPv6 acepte conexiones IPv4
                 sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
                 logger.info("✓ Dual-stack habilitado (IPv4 + IPv6)")
-        
+
         return set_socket_opts
-    
+
     async def start(self):
         """Inicia el servidor TCP y el dispatcher"""
         logger.info(f"Iniciando servidor en {self.config.HOST}:{self.config.PORT}")
 
-        # Crear executor con N workers
-        self.executor = ProcessPoolExecutor(
-            max_workers=self.config.NUM_WORKERS,
-            initializer=self._init_worker
-        )
+        # Crear y configurar el pool de workers
+        self.worker_pool = WorkerPool(self.config.NUM_WORKERS)
+        self.worker_pool.create()
 
-        # Crear dispatcher
-        self.dispatcher = Dispatcher(self.executor)
+        # Crear dispatcher con el executor del pool
+        self.dispatcher = Dispatcher(self.worker_pool.executor)
 
         # Crear socket manualmente para habilitar dual-stack (IPv4 + IPv6)
         sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
@@ -127,20 +124,14 @@ class AsyncioServer:
             logger.info(f"Cliente desconectado: {addr}")
 
 
-    def _init_worker(self):
-        """Inicializador para cada worker (se ejecuta una sola vez)"""
-        # Se inicializa cada worker aquí
-        # Aquí puedes inicializar DB connections, loggers, etc. en cada proceso
-        logger.info("Worker inicializado")
-
     async def stop(self):
         """Detiene el servidor y libera recursos"""
         if self.server:
             self.server.close()
             await self.server.wait_closed()
 
-        if self.executor:
-            self.executor.shutdown(wait=True)
+        if self.worker_pool:
+            self.worker_pool.shutdown(wait=True)
 
         logger.info("Servidor detenido")
 
