@@ -28,6 +28,8 @@ class AsyncioServer:
         Si el sistema operativo no soporta dual-stack, cae a solo IPv4.
         La elección de protocolo la hace el cliente, no el servidor.
         """
+
+        #afunspect e implementacion de dos sockets. Real 
         try:
             sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
             sock.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
