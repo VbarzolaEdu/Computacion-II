@@ -1,4 +1,10 @@
 Frontend
-Cache redis- para reservas que ya se hicieron
-base de datos real, con cola ipc 
 Test
+smtp mail sender
+
+//para proxima reunion 
+Corregir dual stack de piv4 con ipv6 
+corregir validaciones de horarios
+
+//para ultima clase 
+dockerizar todo
