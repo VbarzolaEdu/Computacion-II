@@ -11,12 +11,13 @@ Orden de inicio:
 
 import argparse
 import asyncio
+import os
 
 from database.init_db import init_db
 from workers.pool import WorkerPool
 from server.servidor import AsyncioServer
 
-DB_PATH = "padel.db"
+DB_PATH = os.environ.get("DB_PATH", "padel.db")
 
 
 def parse_args():

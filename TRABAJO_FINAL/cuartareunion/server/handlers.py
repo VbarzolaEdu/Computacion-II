@@ -96,8 +96,8 @@ def _listar_opciones(db_path: str) -> dict:
         for r in conn.execute("SELECT id, club_id, nombre, tipo, precio_base FROM canchas ORDER BY id")
     ]
     horarios = [
-        {"horario": r[0], "multiplicador": r[1]}
-        for r in conn.execute("SELECT horario, multiplicador FROM horarios ORDER BY horario")
+        {"horario": r[0]}
+        for r in conn.execute("SELECT horario FROM horarios ORDER BY horario")
     ]
     conn.close()
     return {"accion": "opciones", "clubes": clubes, "canchas": canchas, "horarios": horarios}

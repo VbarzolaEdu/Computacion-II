@@ -1,0 +1,18 @@
+services:
+  servidor:
+    build: .
+    # network_mode: host permite que el servidor escuche en IPv4 (0.0.0.0)
+    # e IPv6 (::) usando directamente las interfaces del host.
+    # Sin esto, Docker bridge solo rutea IPv4.
+    network_mode: host
+    volumes:
+      # Persiste la base de datos SQLite entre reinicios del contenedor.
+      - padel_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_PATH=/app/data/padel.db
+    restart: unless-stopped
+    command: ["python3", "main.py", "--port", "8888", "--workers", "3"]
+
+volumes:
+  padel_data:

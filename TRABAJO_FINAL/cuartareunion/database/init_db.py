@@ -2,14 +2,6 @@ import sqlite3
 
 import data
 
-# Horarios con multiplicador de precio.
-# 18:00, 19:00, 20:00 son "horario pico" → precio * 1.2
-_MULTIPLICADORES = {
-    "18:00": 1.2,
-    "19:00": 1.2,
-    "20:00": 1.2,
-}
-
 
 def init_db(db_path: str):
     """
@@ -52,8 +44,7 @@ def _crear_tablas(conn: sqlite3.Connection):
         );
 
         CREATE TABLE IF NOT EXISTS horarios (
-            horario       TEXT PRIMARY KEY,
-            multiplicador REAL NOT NULL
+            horario TEXT PRIMARY KEY
         );
 
         CREATE TABLE IF NOT EXISTS reservas (
@@ -91,8 +82,7 @@ def _seed_canchas(conn: sqlite3.Connection):
 
 def _seed_horarios(conn: sqlite3.Connection):
     for horario in data.HORARIOS_DISPONIBLES:
-        multiplicador = _MULTIPLICADORES.get(horario, 1.0)
         conn.execute(
-            "INSERT OR IGNORE INTO horarios (horario, multiplicador) VALUES (?, ?)",
-            (horario, multiplicador),
+            "INSERT OR IGNORE INTO horarios (horario) VALUES (?)",
+            (horario,),
         )
