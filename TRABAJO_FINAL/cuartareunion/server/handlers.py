@@ -7,6 +7,7 @@ import uuid
 from pydantic import ValidationError
 
 from server.schemas import ReservaRequest
+from workers.tasks import calcular_multiplicador
 
 
 async def handle_client(
@@ -96,7 +97,7 @@ def _listar_opciones(db_path: str) -> dict:
         for r in conn.execute("SELECT id, club_id, nombre, tipo, precio_base FROM canchas ORDER BY id")
     ]
     horarios = [
-        {"horario": r[0]}
+        {"horario": r[0], "multiplicador": calcular_multiplicador(r[0])}
         for r in conn.execute("SELECT horario FROM horarios ORDER BY horario")
     ]
     conn.close()

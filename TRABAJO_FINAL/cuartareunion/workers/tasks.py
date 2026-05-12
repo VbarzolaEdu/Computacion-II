@@ -5,11 +5,11 @@ from datetime import datetime
 
 from workers.validaciones import validar_reserva
 
-_HORARIOS_PICO = {"18:00", "19:00", "20:00"}
+HORARIOS_PICO = {"18:00", "19:00", "20:00", "21:00","17:00"}
 
 
-def _calcular_multiplicador(horario: str) -> float:
-    return 1.2 if horario in _HORARIOS_PICO else 1.0
+def calcular_multiplicador(horario: str) -> float:
+    return 1.5 if horario in HORARIOS_PICO else 1.0
 
 # Conexión SQLite del proceso worker.
 # Seteada una sola vez por _init_worker() cuando el proceso arranca.
@@ -58,7 +58,7 @@ def procesar_reserva(request_dict: dict) -> dict:
     # --- Paso 2: calcular precio final ---
     cur = _conn.execute("SELECT precio_base FROM canchas WHERE id = ?", (cancha_id,))
     (precio_base,) = cur.fetchone()
-    precio_final = precio_base * _calcular_multiplicador(horario)
+    precio_final = precio_base * calcular_multiplicador(horario)
 
     # --- Paso 3: intentar confirmar la reserva ---
     # El INSERT puede fallar con IntegrityError si la UNIQUE constraint

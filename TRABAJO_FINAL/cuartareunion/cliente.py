@@ -13,13 +13,6 @@ import socket
 from datetime import date, timedelta
 
 
-_HORARIOS_PICO = {"18:00", "19:00", "20:00"}
-
-
-def _multiplicador(horario: str) -> float:
-    return 1.2 if horario in _HORARIOS_PICO else 1.0
-
-
 def parse_args():
     parser = argparse.ArgumentParser(description="Cliente de reservas de pádel")
     parser.add_argument("--host", default=None, help="IP del servidor (default: 127.0.0.1 / ::1 con --ipv6)")
@@ -138,14 +131,13 @@ def main():
 
         # --- Elegir horario (muestra precio calculado y marca los pico) ---
         def formato_horario(h):
-            mult  = _multiplicador(h["horario"])
-            precio = cancha["precio_base"] * mult
-            pico   = "  ⚡ horario pico" if mult > 1 else ""
+            precio = cancha["precio_base"] * h["multiplicador"]
+            pico   = "  ⚡ horario pico" if h["multiplicador"] > 1 else ""
             return f"{h['horario']}   ${precio:.0f}{pico}"
 
         horario = elegir(horarios, "Horario", formato_horario)
 
-        precio_estimado = cancha["precio_base"] * _multiplicador(horario["horario"])
+        precio_estimado = cancha["precio_base"] * horario["multiplicador"]
 
         # --- Resumen antes de confirmar ---
         print(f"\n{'=' * 48}")
